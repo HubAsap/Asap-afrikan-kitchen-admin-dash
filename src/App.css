@@ -53,3 +53,17 @@ a.active {
   border-radius: 0.5rem 0.5rem 0 0;
   font-weight: 600;
 }
+
+.custom-muted-text{
+  color: #555555;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+
+td {
+  height: 50px;
+  vertical-align: center;
+}

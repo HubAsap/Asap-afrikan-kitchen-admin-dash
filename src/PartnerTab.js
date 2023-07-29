@@ -1,13 +1,17 @@
 import { UserCheck } from "react-feather";
 import { TrendingUp } from "react-feather";
-import React, { useState, useEffect } from "react";
+import { ArrowDown } from "react-feather";
+import React, { useRef, useState, useEffect } from "react";
+import html2pdf from "html2pdf.js";
 
 function PartnerTab(props) {
   const [search_keyword_value, setKeywordValue] = useState("");
   const [search_status_value, setStatusValue] = useState("all");
   const [search_category_value, setCategoryValue] = useState("0");
   const [search_limit_value, setLimitValue] = useState("25");
+  var [isLoadingPartners, setIsLoadingPartners] = useState(true);
   var [partnersDataList, setPartnersDataList] = useState([]);
+  const pdfContentRef = useRef(null);
 
   const handleSearch_KeywordChange = (event) => {
     setKeywordValue(event.target.value);
@@ -32,7 +36,22 @@ function PartnerTab(props) {
     setLimitValue("25");
   };
 
+  const handleDownloadPDF = () => {
+    const pdfContent = pdfContentRef.current;
+    const opt = {
+      margin: 10,
+      filename: "downloaded_pdf.pdf",
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    };
+
+    html2pdf().from(pdfContent).set(opt).save();
+  };
+
   const handleFetchPartners = async (event) => {
+    setIsLoadingPartners(true);
+    setPartnersDataList([]);
     try {
       var keywordAttribute =
         search_keyword_value.trim() === ""
@@ -54,8 +73,7 @@ function PartnerTab(props) {
 
       const data = await response.json();
       setPartnersDataList(data);
-      console.log("Partner apiEndpoint:", apiEndpoint);
-      console.log("Partners:", data);
+      setIsLoadingPartners(false);
     } catch {}
   };
 
@@ -67,7 +85,7 @@ function PartnerTab(props) {
     <>
       <div className="row d-flex">
         <div className="col-12 col-sm-6 col-lg-4">
-          <div className="shadow-sm p-4 mb-5 bg-white rounded border border-1 rounded-5">
+          <div className="shadow-sm p-4 mb-5 bg-white rounded border border-1 rounded-4">
             <div>
               <div className="row">
                 <div className="col-10">
@@ -103,7 +121,9 @@ function PartnerTab(props) {
                   <p className="text-end">
                     <TrendingUp color="green" className="feather-16" />
                     &nbsp;
-                    <span className="text-success fw-bold">0%</span>
+                    <span className="text-success fw-bold">
+                      {props.percentageDiffPartners}%
+                    </span>
                     vs last month
                   </p>
                 </div>
@@ -112,7 +132,7 @@ function PartnerTab(props) {
           </div>
         </div>
         <div className="col-12 col-sm-6 col-lg-4">
-          <div className="shadow-sm p-4 mb-5 bg-white rounded border border-1 rounded-5">
+          <div className="shadow-sm p-4 mb-5 bg-white rounded border border-1 rounded-4">
             <div>
               <div className="row">
                 <div className="col-10">
@@ -159,7 +179,9 @@ function PartnerTab(props) {
                   <p className="text-end">
                     <TrendingUp color="green" className="feather-16" />
                     &nbsp;
-                    <span className="text-success fw-bold">0%</span>
+                    <span className="text-success fw-bold">
+                      {props.percentageDiffOrders}%
+                    </span>
                     vs last month
                   </p>
                 </div>
@@ -168,7 +190,7 @@ function PartnerTab(props) {
           </div>
         </div>
         <div className="col-12 col-sm-12 col-lg-4">
-          <div className="shadow-sm p-4 mb-5 bg-white rounded border border-1 rounded-5">
+          <div className="shadow-sm p-4 mb-5 bg-white rounded border border-1 rounded-4">
             <div>
               <div className="row">
                 <div className="col-10">
@@ -214,7 +236,9 @@ function PartnerTab(props) {
                   <p className="text-end">
                     <TrendingUp color="green" className="feather-16" />
                     &nbsp;
-                    <span className="text-success fw-bold">0%</span>
+                    <span className="text-success fw-bold">
+                      {props.percentageDiffDeliveredOrders}%
+                    </span>
                     vs last month
                   </p>
                 </div>
@@ -226,12 +250,13 @@ function PartnerTab(props) {
       <div className="row">
         <div className="col-6 col-sm-6 col-md-9 col-lg-9 pl-5">
           <h5 className="fw-bold pl">Partners</h5>
-          <p className="pl">Manage your partners</p>
+          <p className="pl custom-muted-text">Manage your partners</p>
         </div>
         <div className="col-6 col-sm-6 col-md-3 col-lg-3">
           <button
             type="button"
-            className="btn shadow-sm p-3 mb-3 bg-white rounded border border-1 rounded-2 flr"
+            className="btn shadow-sm pl-3 pt-2 pb-2 pr-3 mb-3 bg-white rounded border border-1 rounded-2 flr"
+            onClick={handleDownloadPDF}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -239,7 +264,7 @@ function PartnerTab(props) {
               height="16"
               fill="currentColor"
               className="bi bi-download"
-              viewBox="0 0 16 16"
+              viewBox="0 0 19 20"
             >
               <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
               <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
@@ -248,31 +273,42 @@ function PartnerTab(props) {
           </button>
         </div>
       </div>
-      <div className="shadow-sm p-4 h-50 bg-white rounded border border-1 rounded-5">
+      <div className="shadow-sm p-4 h-50 bg-white rounded border border-1 rounded-4">
         <div className="row">
           <div className="col-md-3 col-sm-12 col-12 mt-2">
             <div className="form-group">
-              <label for="exampleInputEmail1" className="text-muted mb-1">
+              <label
+                for="exampleInputEmail1"
+                className="text-muted mb-1"
+                style={{ fontWeight: "500" }}
+              >
                 Search for users
               </label>
               <div className="input-group">
                 <span className="input-group-prepend">
-                  <button
+                  <div
                     onClick={handleFetchPartners}
-                    className="btn btn-outline-secondary bg-white border-end-0 border h-100 ms-n3"
+                    className="bg-white border-end-0 border h-100 ms-n3"
+                    style={{
+                      paddingLeft: "20px",
+                      paddingTop: "10px",
+                      paddingRight: "20px",
+                      borderTopLeftRadius: "8px",
+                      borderBottomLeftRadius: "8px",
+                    }}
                     type="submit"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
                       height="16"
-                      fill="currentColor"
+                      fill="grey"
                       className="bi bi-search"
                       viewBox="0 0 16 16"
                     >
                       <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
                     </svg>
-                  </button>
+                  </div>
                 </span>
                 <input
                   type="text"
@@ -288,14 +324,18 @@ function PartnerTab(props) {
           </div>
           <div className="col-md-2 col-sm-6 col-6 mt-2">
             <div className="form-group ">
-              <label for="inputState" className="text-muted mb-1">
+              <label
+                for="inputState"
+                className="text-muted mb-1"
+                style={{ fontWeight: "500" }}
+              >
                 Status
               </label>
               <select
                 id="search_status"
                 value={search_status_value}
                 onChange={handleSearch_StatusChange}
-                className="form-control form-item-height"
+                className="form-item-height form-select"
               >
                 <option value={"all"} selected>
                   Choose...
@@ -308,14 +348,18 @@ function PartnerTab(props) {
           </div>
           <div className="col-md-2 col-sm-6 col-6 mt-2">
             <div className="form-group">
-              <label for="inputState" className="text-muted mb-1">
+              <label
+                for="inputState"
+                className="text-muted mb-1"
+                style={{ fontWeight: "500" }}
+              >
                 Category
               </label>
               <select
                 id="search_category"
                 value={search_category_value}
                 onChange={handleSearch_CategoryChange}
-                className="form-control form-item-height"
+                className="form-item-height form-select"
               >
                 <option value={"0"} selected>
                   Choose...
@@ -328,14 +372,18 @@ function PartnerTab(props) {
           </div>
           <div className="col-md-2 col-sm-8 col-8 mt-2">
             <div className="form-group">
-              <label for="inputState" className="text-muted mb-1">
+              <label
+                for="inputState"
+                className="text-muted mb-1"
+                style={{ fontWeight: "500" }}
+              >
                 Rows
               </label>
               <select
                 id="search_category"
                 value={search_limit_value}
                 onChange={handleSearch_LimitChange}
-                className="form-control form-item-height"
+                className="form-item-height form-select"
               >
                 <option value={"25"} selected>
                   25
@@ -360,10 +408,14 @@ function PartnerTab(props) {
         </div>
         <br />
         <div className="table-responsive mt4">
-          <table className="table table-striped" style={{ overflow: "auto" }}>
+          <table
+            className="table table-striped"
+            style={{ overflow: "auto" }}
+            ref={pdfContentRef}
+          >
             <thead>
               <tr>
-                <th scope="col">
+                <th scope="col" className="align-middle">
                   <div className="form-check">
                     <input
                       className="form-check-input"
@@ -373,17 +425,47 @@ function PartnerTab(props) {
                     />
                   </div>
                 </th>
-                <th scope="col">Name</th>
-                <th scope="col">Email</th>
-                <th scope="col">Address</th>
-                <th scope="col">Phone</th>
-                <th scope="col">Status</th>
+                <th
+                  scope="col"
+                  className="fw-normal custom-muted-text align-middle"
+                  style={{ fontSize: "14px" }}
+                >
+                  Name <ArrowDown height={"16px"} color="#555555" />
+                </th>
+                <th
+                  scope="col"
+                  className="fw-normal custom-muted-text align-middle"
+                  style={{ fontSize: "14px" }}
+                >
+                  Email
+                </th>
+                <th
+                  scope="col"
+                  className="fw-normal custom-muted-text align-middle"
+                  style={{ fontSize: "14px" }}
+                >
+                  Address
+                </th>
+                <th
+                  scope="col"
+                  className="fw-normal custom-muted-text align-middle"
+                  style={{ fontSize: "14px" }}
+                >
+                  Phone
+                </th>
+                <th
+                  scope="col"
+                  className="fw-normal custom-muted-text align-middle"
+                  style={{ fontSize: "14px" }}
+                >
+                  Status
+                </th>
               </tr>
             </thead>
             <tbody>
               {partnersDataList.map((partner) => (
                 <tr key={partner.id}>
-                  <th scope="row">
+                  <th scope="row" className="align-middle">
                     <div className="form-check">
                       <input
                         className="form-check-input"
@@ -393,26 +475,72 @@ function PartnerTab(props) {
                       />
                     </div>
                   </th>
-                  <td scope="col">{partner.businessname}</td>
-                  <td scope="col">{partner.email}</td>
-                  <td scope="col">{partner.address}</td>
-                  <td scope="col">{partner.phone}</td>
-                  <td scope="col">
+                  <td scope="col" className="align-middle">
+                    {partner.businessname}
+                    <br />
+                    <span style={{ color: "#555555", fontSize: "14px" }}>
+                      Joined {partner.regdate.split(" ")[0]}
+                    </span>
+                  </td>
+                  <td scope="col" className="align-middle">
+                    {partner.email}
+                  </td>
+                  <td scope="col" className="align-middle">
+                    {partner.address}
+                  </td>
+                  <td scope="col" className="align-middle">
+                    {partner.phone}
+                  </td>
+                  <td scope="col" className="align-middle">
                     {partner.status === "active" ? (
                       <div
-                        type="button"
-                        class="btn btn-outline-success btn-small fw-bold"
-                        style={{ borderRadius: "50px" }}
+                        class="rounded-pill border border-2 align-middle"
+                        style={{
+                          paddingTop: "5px",
+                          paddingBottom: "5px",
+                          paddingLeft: "10px",
+                          paddingRight: "10px",
+                          height: "38px",
+                          width: "90px",
+                          backgroundColor: "#E6F8EF",
+                          borderColor: "#A6EAC3",
+                        }}
                       >
-                        {partner.status}
+                        <p
+                          style={{
+                            paddingLeft: "8px",
+                            paddingRight: "8px",
+                            fontWeight: "600",
+                            color: "#067446",
+                          }}
+                        >
+                          Active
+                        </p>
                       </div>
                     ) : (
                       <div
-                        type="button"
-                        class="btn btn-outline-secondary btn-small fw-bold"
-                        style={{ borderRadius: "50px" }}
+                        className="rounded-pill border border-2 align-middle"
+                        style={{
+                          paddingTop: "5px",
+                          paddingBottom: "5px",
+                          paddingLeft: "10px",
+                          paddingRight: "10px",
+                          height: "38px",
+                          width: "100px",
+                          backgroundColor: "#F9FAFB",
+                          borderColor: "#A6EAC3",
+                        }}
                       >
-                        {partner.status}
+                        <p
+                          style={{
+                            paddingLeft: "8px",
+                            paddingRight: "8px",
+                            fontWeight: "600",
+                            color: "#344054",
+                          }}
+                        >
+                          Inactive
+                        </p>
                       </div>
                     )}
                   </td>
@@ -420,8 +548,22 @@ function PartnerTab(props) {
               ))}
             </tbody>
           </table>
+          {isLoadingPartners ? (
+            <div
+              style={{
+                height: "200px",
+                paddingTop: "70px",
+              }}
+              className="d-flex justify-content-center"
+            >
+              <div class="spinner-border text-secondary" role="status"></div>
+            </div>
+          ) : (
+            <br />
+          )}
         </div>
       </div>
+      <br />
     </>
   );
 }
